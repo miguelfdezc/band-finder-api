@@ -11,7 +11,7 @@ const controller = {
           .status(404)
           .send({ message: 'No se ha podido devolver Hola Mundo' });
       } else {
-        return res.status(201).send({ message });
+        return res.status(200).send({ message });
       }
     } catch (err) {
       return res.status(500).send({ message: err.message, error: err });
