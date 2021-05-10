@@ -1,0 +1,31 @@
+{
+  "name": "band-finder-api",
+  "version": "1.0.0",
+  "description": "Band Finder API",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miguelfdezc/band-finder-api.git"
+  },
+  "author": "Miguel Fernández Carratalá",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/miguelfdezc/band-finder-api/issues"
+  },
+  "homepage": "https://github.com/miguelfdezc/band-finder-api#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^9.0.0",
+    "express": "^4.17.1",
+    "fs": "^0.0.1-security",
+    "moment": "^2.29.1"
+  },
+  "devDependencies": {
+    "morgan": "^1.10.0"
+  }
+}
