@@ -12,9 +12,10 @@ Necesitas tener instalado en tu sistema:
 
 ## Instalación
 
-```
+```sh
 npm install
-cp .env.example .env
+cp .env.example .env    # Linux
+copy .env.example .env  # Windows
 ```
 
 ## Ejecución
@@ -23,7 +24,7 @@ Puedes ejecutar la aplicación usando los scripts definidos en el archivo de con
 
 - Ejecución normal
 
-```
+```sh
 npm start
 o
 node index.js
@@ -31,7 +32,7 @@ node index.js
 
 - Ejecución en modo desarrollo
 
-```
+```sh
 npm run dev
 o
 nodemon index.js
