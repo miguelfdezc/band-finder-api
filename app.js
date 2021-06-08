@@ -7,6 +7,8 @@ const cors = require('cors');
 const moment = require('moment');
 
 const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // cargar rutas
 const router = require('./routes/index.route');
