@@ -32,6 +32,7 @@ const service = {
       });
       await admin.auth().setCustomUserClaims(user.uid, {
         admin: collection === 'administradores',
+        tipo: collection,
       });
       const userWithClaims = await admin.auth().getUser(user.uid);
 
