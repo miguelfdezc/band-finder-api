@@ -12,17 +12,24 @@ const service = {
       return false;
     }
   },
+  checkAdminByEmail: async function (email) {
+    try {
+      const user = await admin.auth().getUserByEmail(email);
+      return user.customClaims.admin;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  },
   createUsuario: async function ({ usuario, email, password }, collection) {
     let user = null,
       userDB = null;
     try {
-      user = await admin
-        .auth()
-        .createUser({
-          email,
-          password,
-          photoURL: 'https://image.flaticon.com/icons/png/512/848/848043.png',
-        });
+      user = await admin.auth().createUser({
+        email,
+        password,
+        photoURL: 'https://image.flaticon.com/icons/png/512/848/848043.png',
+      });
       await admin.auth().setCustomUserClaims(user.uid, {
         admin: collection === 'administradores',
       });
