@@ -43,6 +43,7 @@ const service = {
         userDB = {
           usuario,
           descripcion: '',
+          ubicacion: '',
           imagenFondo: '',
           actuaciones: 0,
           valoracion: 0.0,
