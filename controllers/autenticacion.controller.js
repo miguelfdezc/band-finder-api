@@ -19,12 +19,10 @@ const controller = {
         req.body.email
       );
       if (isAdmin === undefined) {
-        return res
-          .status(404)
-          .send({
-            message:
-              'Not Found: no se ha podido comprobar los permisos de administrador del usuario',
-          });
+        return res.status(404).send({
+          message:
+            'Not Found: no se ha podido comprobar los permisos de administrador del usuario',
+        });
       } else {
         return res.status(200).send({ isAdmin });
       }
