@@ -21,7 +21,7 @@ const service = {
       return false;
     }
   },
-  createUsuario: async function ({ usuario, email, password }, collection) {
+  createUser: async function ({ usuario, email, password }, collection) {
     let user = null,
       userDB = null;
     try {
@@ -32,6 +32,7 @@ const service = {
       });
       await admin.auth().setCustomUserClaims(user.uid, {
         admin: collection === 'administradores',
+        type: collection,
       });
       const userWithClaims = await admin.auth().getUser(user.uid);
 
