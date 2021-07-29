@@ -1,6 +1,6 @@
 'use strict';
 
-let AutenticacionService = require('../services/autenticacion.service');
+let AuthService = require('../services/auth.service');
 
 const controller = {
   checkAdmin: async function (req, res) {
@@ -15,9 +15,7 @@ const controller = {
           message: 'Bad Request: el email es un parametro obligatorio',
         });
       }
-      let isAdmin = await AutenticacionService.checkAdminByEmail(
-        req.body.email
-      );
+      let isAdmin = await AuthService.checkAdminByEmail(req.body.email);
       if (isAdmin === undefined) {
         return res.status(404).send({
           message:
@@ -50,7 +48,7 @@ const controller = {
               'Unauthorized: el uid es obligatorio para verificar los permisos de administrador',
           });
         } else {
-          const isAdmin = await AutenticacionService.checkAdmin(req.query.uid);
+          const isAdmin = await AuthService.checkAdmin(req.query.uid);
           if (!isAdmin) {
             return res.status(403).send({
               message:
@@ -66,10 +64,7 @@ const controller = {
           message: 'Not Found: no se ha encontrado el tipo de usuario a crear',
         });
       }
-      let user = await AutenticacionService.createUsuario(
-        req.body,
-        req.params.collection
-      );
+      let user = await AuthService.createUser(req.body, req.params.collection);
       if (!user) {
         return res
           .status(404)

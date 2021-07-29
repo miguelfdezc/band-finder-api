@@ -21,7 +21,7 @@ const service = {
       return false;
     }
   },
-  createUsuario: async function ({ usuario, email, password }, collection) {
+  createUser: async function ({ usuario, email, password }, collection) {
     let user = null,
       userDB = null;
     try {
@@ -32,7 +32,7 @@ const service = {
       });
       await admin.auth().setCustomUserClaims(user.uid, {
         admin: collection === 'administradores',
-        tipo: collection,
+        type: collection,
       });
       const userWithClaims = await admin.auth().getUser(user.uid);
 
@@ -62,9 +62,10 @@ const service = {
 
       return { ...userWithClaims, ...userDB.data() };
     } catch (err) {
-      await admin.auth().deleteUser(user.uid);
-      console.error(err);
-      throw new Error(`Error al crear el usuario: ${err}`);
+      if (user && user.uid) await admin.auth().deleteUser(user.uid);
+
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
     }
   },
 };
