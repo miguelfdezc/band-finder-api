@@ -1,35 +1,54 @@
 'use strict';
 
 const { admin, db } = require('./firebase.service');
+let AuthService = require('./auth.service');
 
 const service = {
-  getUserFromDB: async function (collection, uid) {
+  createUser: async function ({ usuario, email, password }, collection) {
+    let user = null,
+      userDB = null;
     try {
-      const userRef = db.collection(collection).doc(uid);
-      const userDB = await userRef.get();
+      user = await admin.auth().createUser({
+        email,
+        password,
+        photoURL: 'https://image.flaticon.com/icons/png/512/848/848043.png',
+      });
+      await admin.auth().setCustomUserClaims(user.uid, {
+        admin: collection === 'administradores',
+        type: collection,
+      });
+      const userWithClaims = await admin.auth().getUser(user.uid);
 
-      return userDB.data();
+      const userRef = db.collection(collection).doc(user.uid);
+      if (collection === 'administradores') {
+        userDB = { usuario };
+      } else if (collection === 'musicos') {
+        userDB = {
+          usuario,
+          descripcion: '',
+          ubicacion: '',
+          imagenFondo: '',
+          actuaciones: 0,
+          valoracion: 0.0,
+          fans: 0,
+        };
+      } else if (collection === 'negocios') {
+        userDB = {
+          usuario,
+          descripcion: '',
+          ubicacion: '',
+          imagenFondo: '',
+        };
+      }
+      await userRef.set(userDB);
+      userDB = await userRef.get();
+
+      return { ...userWithClaims, ...userDB.data() };
     } catch (err) {
-      console.error(err);
-      throw new Error(`Error al obtener el usuario de base de datos: ${err}`);
-    }
-  },
-  getUserById: async function (uid) {
-    try {
-      const user = await admin.auth().getUser(uid);
-      return user;
-    } catch (err) {
-      console.error(err);
-      throw new Error(`Error al obtener el usuario a partir del UID: ${err}`);
-    }
-  },
-  getUserByEmail: async function (email) {
-    try {
-      const user = await admin.auth().getUserByEmail(email);
-      return user;
-    } catch (err) {
-      console.error(err);
-      throw new Error(`Error al obtener el usuario a partir del email: ${err}`);
+      if (user && user.uid) await admin.auth().deleteUser(user.uid);
+
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
     }
   },
   readUser: async function (uid) {
@@ -78,8 +97,6 @@ const service = {
         disabled,
       });
 
-      console.log(userEdited);
-
       const userRef = db.collection(userEdited.customClaims.type).doc(uid);
 
       const fieldsToEdit = Object.fromEntries(
@@ -99,6 +116,28 @@ const service = {
       userDB = await userRef.get();
 
       return { ...userEdited, ...userDB.data() };
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  deleteUser: async function (uid) {
+    try {
+      const user = await AuthService.getUserById(uid);
+
+      const userRef = db.collection(user.customClaims.type).doc(uid);
+      const isDBuserDeleted = await !!userRef.delete();
+
+      let isAuthUserDeleted = false;
+
+      if (!!isDBuserDeleted)
+        await admin
+          .auth()
+          .deleteUser(uid)
+          .then(() => (isAuthUserDeleted = true))
+          .catch(() => (isAuthUserDeleted = false));
+
+      return isAuthUserDeleted && isDBuserDeleted;
     } catch (err) {
       if (err && err.message) throw new Error(err.message);
       else throw new Error(err);
