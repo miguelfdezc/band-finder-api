@@ -38,7 +38,7 @@ const controller = {
           message: 'Not Found: no se ha encontrado el tipo de usuario a crear',
         });
       }
-      let user = await AuthService.createUser(req.body, req.params.collection);
+      let user = await UserService.createUser(req.body, req.params.collection);
       if (!user) {
         return res
           .status(404)
