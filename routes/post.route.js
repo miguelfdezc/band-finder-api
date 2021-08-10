@@ -9,6 +9,8 @@ router.post('/posts', PostController.createPost);
 router.post('/posts/:id/comments', PostController.addComment);
 router.get('/posts/:id', PostController.readPost);
 router.get('/posts/user/:uid', PostController.readPostsByUser);
+router.put('/posts/likes/:id', PostController.updateLikes);
+router.put('/posts/shares/:id', PostController.updateShared);
 router.put('/posts/:id', PostController.updatePost);
 router.delete('/posts/:id', PostController.deletePost);
 
