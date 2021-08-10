@@ -2,6 +2,7 @@
 
 const { admin, db } = require('./firebase.service');
 let AuthService = require('./auth.service');
+let UserService = require('./user.service');
 
 const service = {
   createPost: async function ({ usuario, imagen, video, descripcion }) {
@@ -11,7 +12,7 @@ const service = {
         imagen: imagen ?? '',
         video: video ?? '',
         descripcion,
-        likes: 0,
+        likes: [],
         shared: 0,
       });
       const postData = await post.get();
@@ -22,7 +23,7 @@ const service = {
       else throw new Error(err);
     }
   },
-  addComment: async function ({ usuario, texto }, post) {
+  addComment: async function ({ usuario: uid, texto }, post) {
     let commentDB = null;
     try {
       const commentRef = db
@@ -30,8 +31,13 @@ const service = {
         .doc(post)
         .collection('comentarios')
         .doc();
+
+      const user = await UserService.readUser(uid);
+
       commentDB = {
-        usuario,
+        usuario: uid,
+        username: user.usuario,
+        userImg: user.photoURL,
         texto,
       };
 
@@ -84,11 +90,65 @@ const service = {
 
       let posts = [];
 
-      snapshot.forEach((doc) => {
-        posts.push({ id: doc.id, ...doc.data() });
+      const usuario = await UserService.readUser(uid);
+
+      snapshot.forEach(async (doc) => {
+        posts.push({
+          id: doc.id,
+          username: usuario.usuario,
+          userImg: usuario.photoURL,
+          ...doc.data(),
+        });
       });
 
+      for (let i = 0; i < posts.length; i++) {
+        const comments = await this.readComments(posts[i].id);
+        posts[i].comentarios = comments;
+      }
+
       return posts;
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  updateLikes: async function ({ usuario }, id) {
+    let post = null,
+      postDB = null;
+    try {
+      const postRef = db.collection('publicaciones').doc(id);
+
+      post = await postRef.get();
+      let likes = post.data().likes;
+
+      const found = likes.some((value) => value === usuario);
+      if (found) likes = likes.filter(() => !likes.includes(usuario));
+      else if (!found) likes.push(usuario);
+
+      await postRef.update({ likes });
+
+      postDB = await postRef.get();
+
+      return { id: postDB.id, ...postDB.data() };
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  updateShared: async function (id) {
+    let post = null,
+      postDB = null;
+    try {
+      const postRef = db.collection('publicaciones').doc(id);
+
+      post = await postRef.get();
+      let shared = post.data().shared + 1;
+
+      await postRef.update({ shared });
+
+      postDB = await postRef.get();
+
+      return { id: postDB.id, ...postDB.data() };
     } catch (err) {
       if (err && err.message) throw new Error(err.message);
       else throw new Error(err);

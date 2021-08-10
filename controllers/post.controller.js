@@ -151,6 +151,88 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
+  updateLikes: async function (req, res) {
+    try {
+      if (typeof req.body === 'undefined') {
+        return res.status(400).send({
+          message: 'Bad Request: el cuerpo de la peticion esta vacio',
+        });
+      }
+      if (typeof req.body.usuario === 'undefined') {
+        return res.status(400).send({
+          message: 'Bad Request: el id del usuario es un parametro obligatorio',
+        });
+      }
+      if (typeof req.params.id === 'undefined') {
+        return res.status(400).send({
+          message:
+            'Bad Request: el id de la publicación es un parametro obligatorio',
+        });
+      }
+
+      let user = await AuthService.getUserById(req.body.usuario);
+      if (!user) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido encontrar el usuario',
+        });
+      }
+      let post = await PostService.readPost(req.params.id);
+      if (!post) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido encontrar la publicación',
+        });
+      }
+
+      let likes = await PostService.updateLikes(req.body, req.params.id);
+      if (!likes) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido dar me gusta a la publicación',
+        });
+      } else {
+        return res.status(200).send({ likes });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
+  updateShared: async function (req, res) {
+    try {
+      if (typeof req.body === 'undefined') {
+        return res.status(400).send({
+          message: 'Bad Request: el cuerpo de la peticion esta vacio',
+        });
+      }
+      if (typeof req.params.id === 'undefined') {
+        return res.status(400).send({
+          message:
+            'Bad Request: el id de la publicación es un parametro obligatorio',
+        });
+      }
+
+      let post = await PostService.readPost(req.params.id);
+      if (!post) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido encontrar la publicación',
+        });
+      }
+
+      let shared = await PostService.updateShared(req.params.id);
+      if (!shared) {
+        return res.status(404).send({
+          message:
+            'Not Found: no se ha podido dar a compartir a la publicación',
+        });
+      } else {
+        return res.status(200).send({ shared });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
   updatePost: async function (req, res) {
     try {
       if (typeof req.body === 'undefined') {
@@ -244,7 +326,7 @@ const controller = {
           message: 'Not Found: no se ha podido eliminar la publicación',
         });
       } else {
-        return res.status(200).send({ message: 'OK' });
+        return res.status(200).send({ message: 'OK', id: req.params.id });
       }
     } catch (err) {
       return res
