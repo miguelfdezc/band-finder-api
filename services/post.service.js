@@ -85,7 +85,7 @@ const service = {
       const snapshot = await postsRef.where('usuario', '==', uid).get();
 
       if (snapshot.empty) {
-        throw 'No matching documents.';
+        return [];
       }
 
       let posts = [];

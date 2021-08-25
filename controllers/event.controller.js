@@ -1,10 +1,10 @@
 'use strict';
 
 let AuthService = require('../services/auth.service');
-let PostService = require('../services/post.service');
+let EventService = require('../services/event.service');
 
 const controller = {
-  createPost: async function (req, res) {
+  createEvent: async function (req, res) {
     try {
       if (typeof req.body === 'undefined') {
         return res.status(400).send({
@@ -16,44 +16,18 @@ const controller = {
           message: 'Bad Request: el id del usuario es un parametro obligatorio',
         });
       }
-
-      let user = await AuthService.getUserById(req.body.usuario);
-      if (!user) {
-        return res.status(404).send({
-          message: 'Not Found: no se ha podido encontrar el usuario',
-        });
-      }
-
-      let post = await PostService.createPost(req.body);
-      if (!post) {
-        return res.status(404).send({
-          message: 'Not Found: no se ha podido guardar la publicación',
-        });
-      } else {
-        return res.status(200).send({ post });
-      }
-    } catch (err) {
-      return res
-        .status(500)
-        .send({ message: `Internal Server Error: ${err.message}`, error: err });
-    }
-  },
-  addComment: async function (req, res) {
-    try {
-      if (typeof req.body === 'undefined') {
+      if (typeof req.body.tipo === 'undefined') {
         return res.status(400).send({
-          message: 'Bad Request: el cuerpo de la peticion esta vacio',
+          message: 'Bad Request: el tipo de evento es un parametro obligatorio',
         });
-      }
-      if (typeof req.body.usuario === 'undefined') {
+      } else if (
+        req.body.tipo !== 'puntual' &&
+        req.body.tipo !== 'diario' &&
+        req.body.tipo !== 'semanal' &&
+        req.body.tipo !== 'mensual'
+      ) {
         return res.status(400).send({
-          message: 'Bad Request: el id del usuario es un parametro obligatorio',
-        });
-      }
-      if (typeof req.params.id === 'undefined') {
-        return res.status(400).send({
-          message:
-            'Bad Request: el id de la publicación es un parametro obligatorio',
+          message: 'Bad Request: el tipo de evento no es válido',
         });
       }
 
@@ -63,20 +37,14 @@ const controller = {
           message: 'Not Found: no se ha podido encontrar el usuario',
         });
       }
-      let post = await PostService.readPost(req.params.id);
-      if (!post) {
-        return res.status(404).send({
-          message: 'Not Found: no se ha podido encontrar la publicación',
-        });
-      }
 
-      let comment = await PostService.addComment(req.body, req.params.id);
-      if (!comment) {
+      let event = await EventService.createEvent(req.body);
+      if (!event) {
         return res.status(404).send({
-          message: 'Not Found: no se ha podido guardar el comentario',
+          message: 'Not Found: no se ha podido guardar el evento',
         });
       } else {
-        return res.status(200).send({ comment });
+        return res.status(200).send({ event });
       }
     } catch (err) {
       return res
@@ -84,20 +52,20 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
-  readPost: async function (req, res) {
+  readEvent: async function (req, res) {
     try {
       if (typeof req.params.id === 'undefined') {
         return res.status(400).send({
-          message: 'Bad Request: el id del post es un parametro obligatorio',
+          message: 'Bad Request: el id del evento es un parametro obligatorio',
         });
       }
-      let post = await PostService.readPost(req.params.id);
-      if (!post) {
+      let event = await EventService.readEvent(req.params.id);
+      if (!event) {
         return res.status(404).send({
-          message: 'Not Found: no se ha podido encontrar la publicación',
+          message: 'Not Found: no se ha podido encontrar el evento',
         });
       } else {
-        return res.status(200).send({ post });
+        return res.status(200).send({ event });
       }
     } catch (err) {
       return res
@@ -105,7 +73,23 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
-  readPostsByUser: async function (req, res) {
+  readEvents: async function (req, res) {
+    try {
+      let events = await EventService.readEvents();
+      if (!events) {
+        return res.status(404).send({
+          message: 'Not Found: no se han podido encontrar los eventos',
+        });
+      } else {
+        return res.status(200).send({ events });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
+  readEventsByUser: async function (req, res) {
     try {
       if (typeof req.params.uid === 'undefined') {
         return res.status(400).send({
@@ -132,18 +116,18 @@ const controller = {
         if (req.params.uid !== req.query.uid) {
           return res.status(403).send({
             message:
-              'Forbidden: el usuario actual no tiene permisos para leer esta publicación',
+              'Forbidden: el usuario actual no tiene permisos para leer este evento',
           });
         }
       }
 
-      let posts = await PostService.readPostsByUser(req.query.uid);
-      if (!posts) {
+      let events = await EventService.readEventsByUser(req.query.uid);
+      if (!events) {
         return res.status(404).send({
-          message: 'Not Found: no se han podido encontrar las publicaciones',
+          message: 'Not Found: no se ha podido encontrar los eventos',
         });
       } else {
-        return res.status(200).send({ posts });
+        return res.status(200).send({ events });
       }
     } catch (err) {
       return res
@@ -151,7 +135,37 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
-  updateLikes: async function (req, res) {
+  readEventsSubscribed: async function (req, res) {
+    try {
+      if (typeof req.params.uid === 'undefined') {
+        return res.status(400).send({
+          message:
+            'Bad Request: el uid del usuario es un parametro obligatorio',
+        });
+      }
+
+      let user = await AuthService.getUserById(req.params.uid);
+      if (!user) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido encontrar el usuario',
+        });
+      }
+
+      let events = await EventService.readEventsSubscribed(req.params.uid);
+      if (!events) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido encontrar los eventos',
+        });
+      } else {
+        return res.status(200).send({ events });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
+  updateSubscribed: async function (req, res) {
     try {
       if (typeof req.body === 'undefined') {
         return res.status(400).send({
@@ -166,7 +180,7 @@ const controller = {
       if (typeof req.params.id === 'undefined') {
         return res.status(400).send({
           message:
-            'Bad Request: el id de la publicación es un parametro obligatorio',
+            'Bad Request: el id de el evento es un parametro obligatorio',
         });
       }
 
@@ -176,20 +190,27 @@ const controller = {
           message: 'Not Found: no se ha podido encontrar el usuario',
         });
       }
-      let post = await PostService.readPost(req.params.id);
-      if (!post) {
+      let readEvent = await EventService.readEvent(req.params.id);
+      if (!readEvent) {
         return res.status(404).send({
-          message: 'Not Found: no se ha podido encontrar la publicación',
+          message: 'Not Found: no se ha podido encontrar el evento',
         });
       }
 
-      let likes = await PostService.updateLikes(req.body, req.params.id);
-      if (!likes) {
+      let availableDate = readEvent.fechas.includes(req.body.fecha);
+      if (!availableDate) {
         return res.status(404).send({
-          message: 'Not Found: no se ha podido dar me gusta a la publicación',
+          message: 'Not Found: la fecha no está disponible',
+        });
+      }
+
+      let event = await EventService.updateSubscribed(req.body, req.params.id);
+      if (!event) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido suscribir al evento',
         });
       } else {
-        return res.status(200).send({ likes });
+        return res.status(200).send({ event });
       }
     } catch (err) {
       return res
@@ -197,7 +218,7 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
-  updateShared: async function (req, res) {
+  updateEvent: async function (req, res) {
     try {
       if (typeof req.body === 'undefined') {
         return res.status(400).send({
@@ -206,43 +227,7 @@ const controller = {
       }
       if (typeof req.params.id === 'undefined') {
         return res.status(400).send({
-          message:
-            'Bad Request: el id de la publicación es un parametro obligatorio',
-        });
-      }
-
-      let post = await PostService.readPost(req.params.id);
-      if (!post) {
-        return res.status(404).send({
-          message: 'Not Found: no se ha podido encontrar la publicación',
-        });
-      }
-
-      let shared = await PostService.updateShared(req.params.id);
-      if (!shared) {
-        return res.status(404).send({
-          message:
-            'Not Found: no se ha podido dar a compartir a la publicación',
-        });
-      } else {
-        return res.status(200).send({ shared });
-      }
-    } catch (err) {
-      return res
-        .status(500)
-        .send({ message: `Internal Server Error: ${err.message}`, error: err });
-    }
-  },
-  updatePost: async function (req, res) {
-    try {
-      if (typeof req.body === 'undefined') {
-        return res.status(400).send({
-          message: 'Bad Request: el cuerpo de la peticion esta vacio',
-        });
-      }
-      if (typeof req.params.id === 'undefined') {
-        return res.status(400).send({
-          message: 'Bad Request: el id del post es un parametro obligatorio',
+          message: 'Bad Request: el id del evento es un parametro obligatorio',
         });
       }
       if (typeof req.body.usuario === 'undefined') {
@@ -251,10 +236,10 @@ const controller = {
         });
       }
 
-      let readPost = await PostService.readPost(req.params.id);
-      if (!readPost) {
+      let readEvent = await EventService.readEvent(req.params.id);
+      if (!readEvent) {
         return res.status(404).send({
-          message: 'Not Found: no se ha podido encontrar la publicación',
+          message: 'Not Found: no se ha podido encontrar el evento',
         });
       }
 
@@ -267,21 +252,21 @@ const controller = {
 
       const isAdmin = await AuthService.checkAdmin(req.body.usuario);
       if (!isAdmin) {
-        if (user.uid !== readPost.usuario) {
+        if (user.uid !== readEvent.usuario) {
           return res.status(403).send({
             message:
-              'Forbidden: el usuario actual no tiene permisos para editar esta publicación',
+              'Forbidden: el usuario actual no tiene permisos para editar este evento',
           });
         }
       }
 
-      let post = await PostService.updatePost(req.body, req.params.id);
-      if (!post) {
+      let event = await EventService.updateEvent(req.body, req.params.id);
+      if (!event) {
         return res.status(404).send({
-          message: 'Not Found: no se ha podido modificar la publicación',
+          message: 'Not Found: no se ha podido modificar el evento',
         });
       } else {
-        return res.status(200).send({ post });
+        return res.status(200).send({ event });
       }
     } catch (err) {
       return res
@@ -289,11 +274,11 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
-  deletePost: async function (req, res) {
+  deleteEvent: async function (req, res) {
     try {
       if (typeof req.params.id === 'undefined') {
         return res.status(400).send({
-          message: 'Bad Request: el id del post es un parametro obligatorio',
+          message: 'Bad Request: el id del evento es un parametro obligatorio',
         });
       }
       if (typeof req.query.uid === 'undefined') {
@@ -303,27 +288,27 @@ const controller = {
         });
       }
 
-      let readPost = await PostService.readPost(req.params.id);
-      if (!readPost) {
+      let readEvent = await EventService.readEvent(req.params.id);
+      if (!readEvent) {
         return res.status(404).send({
-          message: 'Not Found: no se ha podido encontrar la publicación',
+          message: 'Not Found: no se ha podido encontrar el evento',
         });
       }
 
       const isAdmin = await AuthService.checkAdmin(req.query.uid);
       if (!isAdmin) {
-        if (req.query.uid !== readPost.usuario) {
+        if (req.query.uid !== readEvent.usuario) {
           return res.status(403).send({
             message:
-              'Forbidden: el usuario actual no tiene permisos para eliminar esta publicación',
+              'Forbidden: el usuario actual no tiene permisos para eliminar este evento',
           });
         }
       }
 
-      let post = await PostService.deletePost(req.params.id);
-      if (!post) {
+      let event = await EventService.deleteEvent(req.params.id);
+      if (!event) {
         return res.status(404).send({
-          message: 'Not Found: no se ha podido eliminar la publicación',
+          message: 'Not Found: no se ha podido eliminar el evento',
         });
       } else {
         return res.status(200).send({ message: 'OK', id: req.params.id });
