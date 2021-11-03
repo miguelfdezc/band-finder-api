@@ -1,7 +1,6 @@
 'use strict';
 
-const { admin, db } = require('./firebase.service');
-let AuthService = require('./auth.service');
+const { db } = require('./firebase.service');
 let UserService = require('./user.service');
 
 const service = {

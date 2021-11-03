@@ -1,6 +1,5 @@
 'use strict';
 
-const moment = require('moment');
 const { db } = require('./firebase.service');
 let UserService = require('./user.service');
 

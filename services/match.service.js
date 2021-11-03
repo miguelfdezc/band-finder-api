@@ -1,37 +1,7 @@
 'use strict';
 
-const moment = require('moment');
 const { db } = require('./firebase.service');
 let UserService = require('./user.service');
-let BandService = require('./band.service');
-
-/*
-  banda: {
-    actuaciones: Number,
-    ciudad: String,
-    descripcion: String,
-    fans: Number,
-    fechaFundacion: String,
-    fundador: {
-      email: String,
-      nombre: String,
-      username: String,
-      usuario: String
-    },
-    generos: String[],
-    imagenFondo: String,
-    imagenPerfil: String,
-    nivel: String,
-    nombre: String,
-    ubicacion: {
-      latitude: Decimal,
-      latitudeDelta: Decimal,
-      longitude: Decimal,
-      longitudeDelta: Decimal
-    },
-    valoracion: Decimal
-  }
-*/
 
 const service = {
   matchBand: async function ({
