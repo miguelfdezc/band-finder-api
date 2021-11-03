@@ -2,15 +2,6 @@
 
 let AuthService = require('../services/auth.service');
 let MatchService = require('../services/match.service');
-let moment = require('moment');
-
-/*
-  Ubicación
-  Género musical
-  Distancia máxima
-  Instrumento
-  UID Usuario (Otros instrumentos, otros géneros, ubicación principal, etc)
-*/
 
 const controller = {
   matchBand: async function (req, res) {

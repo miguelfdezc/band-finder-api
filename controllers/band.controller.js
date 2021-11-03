@@ -2,7 +2,6 @@
 
 let AuthService = require('../services/auth.service');
 let BandService = require('../services/band.service');
-let moment = require('moment');
 
 const controller = {
   createBand: async function (req, res) {

@@ -1,8 +1,7 @@
 'use strict';
 
 const moment = require('moment');
-const { admin, db } = require('./firebase.service');
-let AuthService = require('./auth.service');
+const { db } = require('./firebase.service');
 let UserService = require('./user.service');
 
 const service = {
@@ -40,33 +39,6 @@ const service = {
       else throw new Error(err);
     }
   },
-  /* addComment: async function ({ usuario: uid, texto }, post) {
-    let commentDB = null;
-    try {
-      const commentRef = db
-        .collection('publicaciones')
-        .doc(post)
-        .collection('comentarios')
-        .doc();
-
-      const user = await UserService.readUser(uid);
-
-      commentDB = {
-        usuario: uid,
-        username: user.usuario,
-        userImg: user.photoURL,
-        texto,
-      };
-
-      await commentRef.set(commentDB);
-      commentDB = await commentRef.get();
-
-      return commentDB.data();
-    } catch (err) {
-      if (err && err.message) throw new Error(err.message);
-      else throw new Error(err);
-    }
-  }, */
   getEventDates: async function (tipo, fechaInicio, fechaFin) {
     try {
       let daysOfYear = [];
@@ -239,25 +211,6 @@ const service = {
       else throw new Error(err);
     }
   },
-  /*updateShared: async function (id) {
-    let post = null,
-      postDB = null;
-    try {
-      const postRef = db.collection('publicaciones').doc(id);
-
-      post = await postRef.get();
-      let shared = post.data().shared + 1;
-
-      await postRef.update({ shared });
-
-      postDB = await postRef.get();
-
-      return { id: postDB.id, ...postDB.data() };
-    } catch (err) {
-      if (err && err.message) throw new Error(err.message);
-      else throw new Error(err);
-    }
-  }, */
   updateEvent: async function (
     {
       usuario,
