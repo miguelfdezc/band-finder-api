@@ -1,8 +1,38 @@
 const seed = require('firestore-seed');
 const { db, admin } = require('../services/firebase.service');
-const faker = require('faker');
+const faker = require('faker/locale/es');
 
-const NUM_BANDS = 10;
+const NUM_BANDS = 100;
+
+// World Coordinates
+// const MIN_LATITUDE = -90;
+// const MAX_LATITUDE = 90;
+// const MIN_LONGITUDE = -180;
+// const MAX_LONGITUDE = 180;
+
+// TEST: Coordinates Near Alicante
+const MIN_LATITUDE = 38.25;
+const MAX_LATITUDE = 39;
+const MIN_LONGITUDE = -1;
+const MAX_LONGITUDE = -0.5;
+
+const instrumentos = [
+  'keyboard',
+  'piano',
+  'recorder',
+  'classical-guitar',
+  'drum-set',
+  'electric-guitar',
+  'violin',
+  'percussion',
+  'bass',
+  'saxophone',
+  'flute',
+  'cello',
+  'clarinet',
+  'trumpet',
+  'harp',
+];
 
 let bandsCollection = seed.collection(
   'bandas',
@@ -25,20 +55,28 @@ let bandsCollection = seed.collection(
         },
         generos: Array(faker.datatype.number({ min: 1, max: 5 }))
           .fill('')
-          .map(() => faker.music.genre()),
+          .map(() => faker.music.genre().toLowerCase().replace(/\s/g, '-')),
+        instrumentos: Array(faker.datatype.number({ min: 1, max: 5 }))
+          .fill('')
+          .map(() => faker.random.arrayElement(instrumentos)),
         imagenFondo: faker.image.image(),
-        imagenPerfil: faker.image.avatar(),
+        imagenPerfil: faker.image.image(),
         nivel: faker.random.arrayElement([
           'principiante',
           'intermedio',
           'avanzado',
-          'profesional',
         ]),
         nombre: `The ${faker.hacker.adjective()} ${faker.hacker.noun()}`,
         ubicacion: {
-          latitude: faker.datatype.float({ min: -90, max: 90 }),
+          latitude: faker.datatype.float({
+            min: MIN_LATITUDE,
+            max: MAX_LATITUDE,
+          }),
           latitudeDelta: 0.0922,
-          longitude: faker.datatype.float({ min: -180, max: 180 }),
+          longitude: faker.datatype.float({
+            min: MIN_LONGITUDE,
+            max: MAX_LONGITUDE,
+          }),
           longitudeDelta: 0.0421,
         },
         valoracion: faker.datatype.float({ min: 0, max: 5, precision: 0.1 }),
