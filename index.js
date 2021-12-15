@@ -3,7 +3,7 @@
 const app = require('./app');
 const dotenv = require('dotenv').config();
 
-const port = process.env.APP_PORT || 8000;
+const port = process.env.PORT || 8000;
 const url =
   process.env.ENV === 'production'
     ? 'https://band-finder-api.herokuapp.com/'
