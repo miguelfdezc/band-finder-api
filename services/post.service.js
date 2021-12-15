@@ -58,7 +58,7 @@ const service = {
 
       const comments = await this.readComments(id);
 
-      return { ...postDB.data(), comentarios: comments };
+      return { id, ...postDB.data(), comentarios: comments };
     } catch (err) {
       if (err && err.message) throw new Error(err.message);
       else throw new Error(err);
@@ -73,6 +73,42 @@ const service = {
         .get();
 
       return comments.docs.map((doc) => doc.data());
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  getPostsLength: async function () {
+    try {
+      const allPosts = await db
+        .collection('publicaciones')
+        .select('usuario')
+        .get();
+      return allPosts.docs.length;
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  readPosts: async function (offset, limit) {
+    try {
+      let posts = [];
+      posts = await db
+        .collection('publicaciones')
+        .offset(offset)
+        .limit(limit)
+        .get();
+
+      posts = posts.docs.map((doc) => {
+        return { id: doc.id, ...doc.data() };
+      });
+
+      for (let i = 0; i < posts.length; i++) {
+        const comentarios = await this.readComments(posts[i].id);
+        posts[i].comentarios = comentarios;
+      }
+
+      return posts;
     } catch (err) {
       if (err && err.message) throw new Error(err.message);
       else throw new Error(err);
@@ -160,6 +196,7 @@ const service = {
 
       const fieldsToEdit = Object.fromEntries(
         Object.entries({
+          usuario,
           imagen,
           video,
           descripcion,

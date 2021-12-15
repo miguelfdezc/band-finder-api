@@ -105,6 +105,39 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
+  getPostsLength: async function (req, res) {
+    try {
+      let length = await PostService.getPostsLength();
+      if (!length) {
+        return res.status(404).send({
+          message: 'Not Found: no se han podido contar las publicaciones',
+        });
+      } else {
+        return res.status(200).send({ length });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
+  readPosts: async function (req, res) {
+    try {
+      const { offset, limit } = req.query;
+      let posts = await PostService.readPosts(Number(offset), Number(limit));
+      if (!posts) {
+        return res.status(404).send({
+          message: 'Not Found: no se han podido encontrar las publicaciones',
+        });
+      } else {
+        return res.status(200).send({ posts });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
   readPostsByUser: async function (req, res) {
     try {
       if (typeof req.params.uid === 'undefined') {
@@ -245,6 +278,12 @@ const controller = {
           message: 'Bad Request: el id del post es un parametro obligatorio',
         });
       }
+      if (typeof req.query.uid === 'undefined') {
+        return res.status(400).send({
+          message:
+            'Bad Request: el uid del usuario es un parametro obligatorio',
+        });
+      }
       if (typeof req.body.usuario === 'undefined') {
         return res.status(400).send({
           message: 'Bad Request: el id del usuario es un parametro obligatorio',
@@ -265,7 +304,7 @@ const controller = {
         });
       }
 
-      const isAdmin = await AuthService.checkAdmin(req.body.usuario);
+      const isAdmin = await AuthService.checkAdmin(req.query.uid);
       if (!isAdmin) {
         if (user.uid !== readPost.usuario) {
           return res.status(403).send({

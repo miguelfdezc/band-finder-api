@@ -44,7 +44,7 @@ const controller = {
           .status(404)
           .send({ message: 'Not Found: no se ha podido registrar el usuario' });
       } else {
-        return res.status(200).send({ user });
+        return res.status(201).send({ user });
       }
     } catch (err) {
       return res
@@ -80,6 +80,78 @@ const controller = {
           .send({ message: 'Not Found: no se ha podido encontrar el usuario' });
       } else {
         return res.status(200).send({ user });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
+  getMusiciansLength: async function (req, res) {
+    try {
+      let length = await UserService.getMusiciansLength();
+      if (!length) {
+        return res.status(404).send({
+          message: 'Not Found: no se han podido contar los músicos',
+        });
+      } else {
+        return res.status(200).send({ length });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
+  getBusinessesLength: async function (req, res) {
+    try {
+      let length = await UserService.getBusinessesLength();
+      if (!length) {
+        return res.status(404).send({
+          message: 'Not Found: no se han podido contar los negocios',
+        });
+      } else {
+        return res.status(200).send({ length });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
+  readUsers: async function (req, res) {
+    try {
+      const { offset, limit } = req.query;
+      if (typeof req.params.type === 'undefined') {
+        return res.status(400).send({
+          message: 'Bad Request: el tipo de usuario es obligatorio',
+        });
+      }
+      if (typeof req.query.uid === 'undefined') {
+        return res.status(401).send({
+          message:
+            'Unauthorized: el uid es obligatorio para verificar los permisos de administrador',
+        });
+      }
+      const isAdmin = await AuthService.checkAdmin(req.query.uid);
+      if (!isAdmin) {
+        return res.status(403).send({
+          message:
+            'Forbidden: el usuario actual no tiene permisos de administrador',
+        });
+      }
+
+      let users = await UserService.readUsers(
+        req.params.type,
+        Number(offset),
+        Number(limit)
+      );
+      if (!users) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido encontrar los usuarios',
+        });
+      } else {
+        return res.status(200).send({ users });
       }
     } catch (err) {
       return res
