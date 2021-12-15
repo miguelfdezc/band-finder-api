@@ -15,17 +15,21 @@ const router = require('./routes/index.route');
 
 // middlewares
 app.use(cors()); // Configurar cabeceras y cors
-app.use(
-  logger(process.env.ENV === 'production' ? 'combined' : 'dev', {
-    stream: fs.createWriteStream(
-      './logs/' + moment().format('YYYY-MM-DD') + '.log',
-      {
-        flags: 'a',
-      }
-    ),
-  })
-); // probar con: tiny, short, dev, common, combined
-app.use(logger('dev'));
+if (process.env.ENV === 'dev') {
+  app.use(
+    logger('dev', {
+      stream: fs.createWriteStream(
+        './logs/' + moment().format('YYYY-MM-DD') + '.log',
+        {
+          flags: 'a',
+        }
+      ),
+    })
+  );
+} else if (process.env.ENV === 'production') {
+  app.use(logger('combined'));
+}
+// probar con: tiny, short, dev, common, combined
 
 // rutas
 app.use('/api', router);
