@@ -59,9 +59,26 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
+  getBandsLength: async function (req, res) {
+    try {
+      let length = await BandService.getBandsLength();
+      if (!length) {
+        return res.status(404).send({
+          message: 'Not Found: no se han podido contar las bandas',
+        });
+      } else {
+        return res.status(200).send({ length });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
   readBands: async function (req, res) {
     try {
-      let bands = await BandService.readBands();
+      const { offset, limit } = req.query;
+      let bands = await BandService.readBands(Number(offset), Number(limit));
       if (!bands) {
         return res.status(404).send({
           message: 'Not Found: no se han podido encontrar las bandas',

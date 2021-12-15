@@ -62,6 +62,58 @@ const service = {
 
       return { ...userWithClaims, ...userDB.data() };
     } catch (err) {
+      if (err.errorInfo.code === 'auth/user-not-found') return null;
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  getMusiciansLength: async function () {
+    try {
+      const allMusicians = await db
+        .collection('musicos')
+        .select('usuario')
+        .get();
+      return allMusicians.docs.length;
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  getBusinessesLength: async function () {
+    try {
+      const allBusinesses = await db
+        .collection('negocios')
+        .select('usuario')
+        .get();
+      return allBusinesses.docs.length;
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  readUsers: async function (type, offset, limit) {
+    let usersDB = null;
+    try {
+      console.log('TYPE:', type);
+      const usersWithClaims = await (await admin.auth().listUsers()).users;
+      // console.log('usersWithClaims', usersWithClaims);
+
+      console.log('usersWithClaims:', usersWithClaims.length);
+
+      usersDB = await db.collection(type).offset(offset).limit(limit).get();
+
+      console.log('usersDB:', usersDB.size);
+
+      const users = usersDB.docs.map((doc) => {
+        return {
+          ...usersWithClaims.find((user) => user.uid === doc.id),
+          ...doc.data(),
+        };
+      });
+
+      return users;
+    } catch (err) {
+      console.trace(err);
       if (err && err.message) throw new Error(err.message);
       else throw new Error(err);
     }

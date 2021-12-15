@@ -117,10 +117,19 @@ const service = {
       else throw new Error(err);
     }
   },
-  readEvents: async function () {
+  getEventsLength: async function () {
+    try {
+      const allEvents = await db.collection('eventos').select('usuario').get();
+      return allEvents.docs.length;
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  readEvents: async function (offset, limit) {
     try {
       let events = [];
-      events = await db.collection('eventos').get();
+      events = await db.collection('eventos').offset(offset).limit(limit).get();
 
       events = events.docs.map((doc) => {
         return { id: doc.id, ...doc.data() };

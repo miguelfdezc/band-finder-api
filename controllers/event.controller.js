@@ -73,9 +73,26 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
+  getEventsLength: async function (req, res) {
+    try {
+      let length = await EventService.getEventsLength();
+      if (!length) {
+        return res.status(404).send({
+          message: 'Not Found: no se han podido contar los eventos',
+        });
+      } else {
+        return res.status(200).send({ length });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
   readEvents: async function (req, res) {
     try {
-      let events = await EventService.readEvents();
+      const { offset, limit } = req.query;
+      let events = await EventService.readEvents(Number(offset), Number(limit));
       if (!events) {
         return res.status(404).send({
           message: 'Not Found: no se han podido encontrar los eventos',
