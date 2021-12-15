@@ -16,7 +16,7 @@ const router = require('./routes/index.route');
 // middlewares
 app.use(cors()); // Configurar cabeceras y cors
 app.use(
-  logger('combined', {
+  logger(process.env.ENV === 'production' ? 'combined' : 'dev', {
     stream: fs.createWriteStream(
       './logs/' + moment().format('YYYY-MM-DD') + '.log',
       {
