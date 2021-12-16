@@ -90,14 +90,18 @@ const service = {
       else throw new Error(err);
     }
   },
-  readPosts: async function (offset, limit) {
+  readPosts: async function (offset = 0, limit) {
     try {
       let posts = [];
-      posts = await db
-        .collection('publicaciones')
-        .offset(offset)
-        .limit(limit)
-        .get();
+
+      if (!limit)
+        posts = await db.collection('publicaciones').offset(offset).get();
+      else
+        posts = await db
+          .collection('publicaciones')
+          .offset(offset)
+          .limit(limit)
+          .get();
 
       posts = posts.docs.map((doc) => {
         return { id: doc.id, ...doc.data() };
