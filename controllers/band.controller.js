@@ -78,7 +78,10 @@ const controller = {
   readBands: async function (req, res) {
     try {
       const { offset, limit } = req.query;
-      let bands = await BandService.readBands(Number(offset), Number(limit));
+      let bands = await BandService.readBands(
+        Number(offset ?? 0),
+        Number(limit ?? 0)
+      );
       if (!bands) {
         return res.status(404).send({
           message: 'Not Found: no se han podido encontrar las bandas',

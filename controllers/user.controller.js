@@ -143,8 +143,8 @@ const controller = {
 
       let users = await UserService.readUsers(
         req.params.type,
-        Number(offset),
-        Number(limit)
+        Number(offset ?? 0),
+        Number(limit ?? 0)
       );
       if (!users) {
         return res.status(404).send({
