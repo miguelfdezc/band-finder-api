@@ -124,7 +124,10 @@ const controller = {
   readPosts: async function (req, res) {
     try {
       const { offset, limit } = req.query;
-      let posts = await PostService.readPosts(Number(offset), Number(limit));
+      let posts = await PostService.readPosts(
+        Number(offset ?? 0),
+        Number(limit ?? 0)
+      );
       if (!posts) {
         return res.status(404).send({
           message: 'Not Found: no se han podido encontrar las publicaciones',

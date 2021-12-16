@@ -92,7 +92,10 @@ const controller = {
   readEvents: async function (req, res) {
     try {
       const { offset, limit } = req.query;
-      let events = await EventService.readEvents(Number(offset), Number(limit));
+      let events = await EventService.readEvents(
+        Number(offset ?? 0),
+        Number(limit ?? 0)
+      );
       if (!events) {
         return res.status(404).send({
           message: 'Not Found: no se han podido encontrar los eventos',
