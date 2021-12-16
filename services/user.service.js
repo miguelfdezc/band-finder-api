@@ -91,18 +91,14 @@ const service = {
       else throw new Error(err);
     }
   },
-  readUsers: async function (type, offset, limit) {
+  readUsers: async function (type, offset = 0, limit) {
     let usersDB = null;
     try {
-      console.log('TYPE:', type);
       const usersWithClaims = await (await admin.auth().listUsers()).users;
-      // console.log('usersWithClaims', usersWithClaims);
 
-      console.log('usersWithClaims:', usersWithClaims.length);
-
-      usersDB = await db.collection(type).offset(offset).limit(limit).get();
-
-      console.log('usersDB:', usersDB.size);
+      if (!limit) usersDB = await db.collection(type).offset(offset).get();
+      else
+        usersDB = await db.collection(type).offset(offset).limit(limit).get();
 
       const users = usersDB.docs.map((doc) => {
         return {
