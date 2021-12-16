@@ -126,10 +126,17 @@ const service = {
       else throw new Error(err);
     }
   },
-  readEvents: async function (offset, limit) {
+  readEvents: async function (offset = 0, limit) {
     try {
       let events = [];
-      events = await db.collection('eventos').offset(offset).limit(limit).get();
+
+      if (!limit) events = await db.collection('eventos').offset(offset).get();
+      else
+        events = await db
+          .collection('eventos')
+          .offset(offset)
+          .limit(limit)
+          .get();
 
       events = events.docs.map((doc) => {
         return { id: doc.id, ...doc.data() };

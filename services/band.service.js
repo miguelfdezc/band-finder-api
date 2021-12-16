@@ -128,13 +128,13 @@ const service = {
       else throw new Error(err);
     }
   },
-  readBands: async function (offset, limit) {
+  readBands: async function (offset = 0, limit) {
     try {
-      console.log('OFFSET:', offset);
-      console.log('LIMIT:', limit);
       let bands = [];
 
-      bands = await db.collection('bandas').offset(offset).limit(limit).get();
+      if (!limit) bands = await db.collection('bandas').offset(offset).get();
+      else
+        bands = await db.collection('bandas').offset(offset).limit(limit).get();
 
       bands = bands.docs.map((doc) => {
         return {
@@ -142,8 +142,6 @@ const service = {
           ...doc.data(),
         };
       });
-
-      console.log('BANDS:', bands.length);
 
       for (let i = 0; i < bands.length; i++) {
         const miembros = await this.readMembers(bands[i].id);
