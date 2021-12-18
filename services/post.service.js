@@ -151,6 +151,28 @@ const service = {
       else throw new Error(err);
     }
   },
+  readPostsByFollowed: async function (uid) {
+    try {
+      let posts = [];
+
+      const usuario = await UserService.readUser(uid);
+
+      for (let i = 0; i < usuario.seguidos.length; i++) {
+        const postsFollowed = await this.readPostsByUser(usuario.seguidos[i]);
+        posts.push(...postsFollowed);
+      }
+
+      for (let i = 0; i < posts.length; i++) {
+        const comments = await this.readComments(posts[i].id);
+        posts[i].comentarios = comments;
+      }
+
+      return posts;
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
   updateLikes: async function ({ usuario }, id) {
     let post = null,
       postDB = null;
