@@ -11,6 +11,7 @@ router.get('/posts/:id', PostController.readPost);
 router.get('/posts', PostController.readPosts);
 router.get('/length/posts', PostController.getPostsLength);
 router.get('/posts/user/:uid', PostController.readPostsByUser);
+router.get('/posts/user/:uid/followed', PostController.readPostsByFollowed);
 router.put('/posts/likes/:id', PostController.updateLikes);
 router.put('/posts/shares/:id', PostController.updateShared);
 router.put('/posts/:id', PostController.updatePost);
