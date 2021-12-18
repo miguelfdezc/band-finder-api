@@ -98,6 +98,7 @@ const service = {
     // Experiencia (MAX: 1p)
     let p_exp = 0;
     const found = user.instrumentos.findIndex((v) => v.nombre === instrumento);
+
     if (found >= 0) {
       switch (band.nivel) {
         case 'principiante':

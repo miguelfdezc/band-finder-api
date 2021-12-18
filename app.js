@@ -5,6 +5,7 @@ const logger = require('morgan');
 const fs = require('fs');
 const cors = require('cors');
 const moment = require('moment');
+const dotenv = require('dotenv').config();
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -17,7 +18,7 @@ const router = require('./routes/index.route');
 app.use(cors()); // Configurar cabeceras y cors
 if (process.env.ENV === 'dev') {
   app.use(
-    logger('dev', {
+    logger('common', {
       stream: fs.createWriteStream(
         './logs/' + moment().format('YYYY-MM-DD') + '.log',
         {
@@ -26,6 +27,7 @@ if (process.env.ENV === 'dev') {
       ),
     })
   );
+  app.use(logger('dev'));
 } else if (process.env.ENV === 'production') {
   app.use(logger('combined'));
 }
