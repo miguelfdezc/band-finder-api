@@ -95,6 +95,51 @@ const controller = {
         .send({ message: `Internal Server Error: ${err.message}`, error: err });
     }
   },
+  readBandsByFounder: async function (req, res) {
+    try {
+      if (typeof req.params.uid === 'undefined') {
+        return res.status(400).send({
+          message: 'Bad Request: el id del usuario es un parametro obligatorio',
+        });
+      }
+      if (typeof req.query.uid === 'undefined') {
+        return res.status(401).send({
+          message:
+            'Unauthorized: el uid es obligatorio para verificar los permisos del usuario',
+        });
+      }
+
+      let user = await AuthService.getUserById(req.params.uid);
+      if (!user) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido encontrar el usuario',
+        });
+      }
+
+      const isAdmin = await AuthService.checkAdmin(req.query.uid);
+      if (!isAdmin) {
+        if (req.params.uid !== req.query.uid) {
+          return res.status(403).send({
+            message:
+              'Forbidden: el usuario actual no tiene permisos para leer bandas',
+          });
+        }
+      }
+
+      let bands = await BandService.readBandsByFounder(req.query.uid);
+      if (!bands) {
+        return res.status(404).send({
+          message: 'Not Found: no se ha podido encontrar las bandas',
+        });
+      } else {
+        return res.status(200).send({ bands });
+      }
+    } catch (err) {
+      return res
+        .status(500)
+        .send({ message: `Internal Server Error: ${err.message}`, error: err });
+    }
+  },
   submitApplication: async function (req, res) {
     try {
       if (typeof req.body === 'undefined') {

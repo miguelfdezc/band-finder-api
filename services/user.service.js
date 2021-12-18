@@ -30,7 +30,8 @@ const service = {
           imagenFondo: '',
           actuaciones: 0,
           valoracion: 0.0,
-          fans: 0,
+          fans: [],
+          seguidos: [],
         };
       } else if (collection === 'negocios') {
         userDB = {
@@ -126,6 +127,7 @@ const service = {
       actuaciones,
       descripcion,
       fans,
+      seguidos,
       imagenFondo,
       ubicacion,
       usuario,
@@ -152,6 +154,7 @@ const service = {
           actuaciones,
           descripcion,
           fans,
+          seguidos,
           imagenFondo,
           ubicacion,
           usuario,
@@ -164,6 +167,55 @@ const service = {
       userDB = await userRef.get();
 
       return { ...userEdited, ...userDB.data() };
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  updateFans: async function ({ usuario }, uid) {
+    let userFollowedDB = null,
+      userFollowingDB = null;
+    try {
+      const userFollowed = await admin.auth().getUser(usuario);
+      const userFollowing = await admin.auth().getUser(uid);
+
+      const userFollowedRef = db
+        .collection(userFollowed.customClaims.type)
+        .doc(usuario);
+      const userFollowingRef = db
+        .collection(userFollowing.customClaims.type)
+        .doc(uid);
+
+      userFollowedDB = await (await userFollowedRef.get()).data();
+      userFollowingDB = await (await userFollowingRef.get()).data();
+
+      if (userFollowedDB.fans.includes(uid))
+        await userFollowedRef.update({
+          fans: [...userFollowedDB.fans.filter((f) => f !== uid)],
+        });
+      else {
+        await userFollowedRef.update({
+          fans: [...userFollowedDB.fans, uid],
+        });
+      }
+
+      if (userFollowingDB.seguidos.includes(usuario)) {
+        await userFollowingRef.update({
+          seguidos: [...userFollowingDB.seguidos.filter((f) => f !== usuario)],
+        });
+      } else {
+        await userFollowingRef.update({
+          seguidos: [...userFollowingDB.seguidos, usuario],
+        });
+      }
+
+      userFollowedDB = await userFollowedRef.get();
+      userFollowingDB = await userFollowingRef.get();
+
+      return {
+        userFollowed: { ...userFollowed, ...userFollowedDB.data() },
+        userFollowing: { ...userFollowing, ...userFollowingDB.data() },
+      };
     } catch (err) {
       if (err && err.message) throw new Error(err.message);
       else throw new Error(err);

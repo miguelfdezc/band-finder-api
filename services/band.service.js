@@ -156,8 +156,24 @@ const service = {
       else throw new Error(err);
     }
   },
-  submitApplication: async function ({ usuario: uid, texto }, band) {
+  readBandsByFounder: async function (uid) {
+    let bandsDB = null;
+    try {
+      const bandRef = db.collection('bandas');
+
+      bandsDB = await (
+        await bandRef.where('fundador.usuario', '==', uid).get()
+      ).docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      return bandsDB;
+    } catch (err) {
+      if (err && err.message) throw new Error(err.message);
+      else throw new Error(err);
+    }
+  },
+  submitApplication: async function ({ usuario: uid, instrumento }, band) {
     let applicationDB = null;
+    console.log('INSTRUMENTO:', instrumento);
     try {
       const applicationRef = db
         .collection('bandas')
@@ -176,7 +192,7 @@ const service = {
           usuario: uid,
           username: user.usuario,
           userImg: user.photoURL,
-          texto,
+          instrumento,
         };
 
         await applicationRef.add(applicationDB);
@@ -210,7 +226,8 @@ const service = {
         .limit(1)
         .get();
 
-      if (!snapshot.empty) snapshot.docs.map((doc) => doc.ref)[0].delete();
+      console.log('ACEPTADO:', aceptado);
+      console.log('INSTRUMENTO:', instrumento);
 
       if (aceptado) {
         const user = await UserService.readUser(usuario);
@@ -218,11 +235,13 @@ const service = {
           usuario,
           username: user.usuario,
           userImg: user.photoURL,
-          instrumento: instrumento,
+          instrumento,
         };
 
         await membersRef.create(membersDB);
       }
+
+      snapshot.docs.map((doc) => doc.ref)[0].delete();
 
       membersDB = await this.readMembers(band);
 
