@@ -11,7 +11,6 @@ const service = {
       user = await admin.auth().createUser({
         email,
         password,
-        photoURL: 'https://image.flaticon.com/icons/png/512/848/848043.png',
       });
       await admin.auth().setCustomUserClaims(user.uid, {
         admin: collection === 'administradores',
@@ -27,6 +26,7 @@ const service = {
           usuario,
           descripcion: '',
           ubicacion: '',
+          imagenPerfil: '',
           imagenFondo: '',
           actuaciones: 0,
           valoracion: 0.0,
@@ -38,6 +38,7 @@ const service = {
           usuario,
           descripcion: '',
           ubicacion: '',
+          imagenPerfil: '',
           imagenFondo: '',
         };
       }
@@ -122,12 +123,12 @@ const service = {
       emailVerified,
       password,
       displayName,
-      photoURL,
       disabled,
       actuaciones,
       descripcion,
       fans,
       seguidos,
+      imagenPerfil,
       imagenFondo,
       ubicacion,
       usuario,
@@ -143,7 +144,6 @@ const service = {
         emailVerified,
         password,
         displayName,
-        photoURL,
         disabled,
       });
 
@@ -155,6 +155,7 @@ const service = {
           descripcion,
           fans,
           seguidos,
+          imagenPerfil,
           imagenFondo,
           ubicacion,
           usuario,

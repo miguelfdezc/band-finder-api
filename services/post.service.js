@@ -36,7 +36,7 @@ const service = {
       commentDB = {
         usuario: uid,
         username: user.usuario,
-        userImg: user.photoURL,
+        userImg: user.imagenPerfil,
         texto,
       };
 
@@ -135,7 +135,7 @@ const service = {
         posts.push({
           id: doc.id,
           username: usuario.usuario,
-          userImg: usuario.photoURL,
+          userImg: usuario.imagenPerfil,
           ...doc.data(),
         });
       });

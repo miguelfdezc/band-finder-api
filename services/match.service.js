@@ -1,5 +1,6 @@
 'use strict';
 
+require('dotenv').config();
 const { db } = require('./firebase.service');
 let UserService = require('./user.service');
 
@@ -50,74 +51,60 @@ const service = {
     }
   },
   calculatePoints: function (band, user, instrumento, distancias) {
-    let points, p_inst, p_gen, p_dist, bonus_instruments, bonus_genres;
-    points = p_inst = p_gen = p_dist = bonus_instruments = bonus_genres = 0;
+    let points, p_inst, p_gen, p_dist, p_exp, bonus_instruments;
+    points = p_inst = p_gen = p_dist = p_exp = bonus_instruments = 0;
+
+    const INSTRUMENT = process.env.INSTRUMENT ?? 3;
+    const BONUS_INSTRUMENT = process.env.BONUS_INSTRUMENT ?? 0.5;
+    const GENRE = process.env.GENRE ?? 1;
+    const DISTANCES = {
+      EXCELENTE: process.env.DISTANCE_EXCELLENT ?? 3,
+      MUY_BUENA: process.env.DISTANCE_VERY_GOOD ?? 2.5,
+      BUENA: process.env.DISTANCE_GOOD ?? 1.5,
+      INTERMEDIA: process.env.DISTANCE_INTERMEDIATE ?? 1,
+      SUFICIENTE: process.env.DISTANCE_SUFFICIENT ?? 0.5,
+    };
+    const LEVEL_EQUAL = process.env.LEVEL_EQUAL ?? 1;
+    const LEVEL_LOWER = process.env.LEVEL_LOWER ?? 0.5;
+    const LEVELS = {
+      principiante: 0,
+      intermedio: 1,
+      avanzado: 2,
+    };
 
     // Instrumentos (MAX: 4p)
-    if (band.instrumentos.includes(instrumento)) p_inst += 3;
-    user.instrumentos.forEach((value) => {
-      if (
-        value.nombre !== instrumento &&
-        bonus_instruments < 1 &&
-        band.instrumentos.includes(value.nombre)
-      )
-        bonus_instruments += 0.5;
-    });
+    if (band.instrumentos.includes(instrumento)) p_inst += INSTRUMENT;
+    for (const i of user.instrumentos) {
+      if (bonus_instruments === 1) break;
+      bonus_instruments +=
+        i.nombre !== instrumento && band.instrumentos.includes(i.nombre)
+          ? BONUS_INSTRUMENT
+          : 0;
+    }
     p_inst += bonus_instruments;
     if (p_inst === 0) return 0;
 
     // Géneros (MAX: 2p)
-    user.generos.forEach((value) => {
-      if (bonus_genres < 2 && band.generos.includes(value)) bonus_genres += 1;
-    });
-    p_gen = bonus_genres;
-
-    // Distancia (MAX: 3p)
-
-    const d = Number(band.distancia);
-
-    switch (true) {
-      case d < distancias.EXCELENTE:
-        p_dist += 3;
-        break;
-      case d < distancias.MUY_BUENA:
-        p_dist += 2.5;
-        break;
-      case d < distancias.BUENA:
-        p_dist += 1.5;
-        break;
-      case d < distancias.INTERMEDIA:
-        p_dist += 1;
-        break;
-      case d < distancias.SUFICIENTE:
-        p_dist += 0.5;
-      default:
-        break;
+    for (const g of user.generos) {
+      if (p_gen === 2) break;
+      p_gen += band.generos.includes(g) ? GENRE : 0;
     }
 
-    // Experiencia (MAX: 1p)
-    let p_exp = 0;
-    const found = user.instrumentos.findIndex((v) => v.nombre === instrumento);
+    // Distancia (MAX: 3p)
+    const dist = Number(band.distancia);
+    for (const d in distancias) if (dist < distancias[d]) p_dist = DISTANCES[d];
 
+    // Experiencia (MAX: 1p)
+    const found = user.instrumentos.findIndex((v) => v.nombre === instrumento);
     if (found >= 0) {
-      switch (band.nivel) {
-        case 'principiante':
-          if (user.instrumentos[found].nivel === 'principiante') p_exp = 1;
-          else p_exp = 0.5;
-          break;
-        case 'intermedio':
-          if (user.instrumentos[found].nivel === 'principiante') p_exp = 0;
-          else if (user.instrumentos[found].nivel === 'intermedio') p_exp = 1;
-          else if (user.instrumentos[found].nivel === 'avanzado') p_exp = 0.5;
-          break;
-        case 'avanzado':
-          if (user.instrumentos[found].nivel === 'avanzado') p_exp = 1;
-          else p_exp = 0;
-          break;
-      }
+      const bandLevel = LEVELS[band.nivel],
+        userLevel = LEVELS[user.instrumentos[found].nivel];
+      if (userLevel === bandLevel) p_exp = LEVEL_EQUAL;
+      else if (userLevel > bandLevel) p_exp = LEVEL_LOWER;
     }
     if (p_exp === 0) return 0;
 
+    // TOTAL POINTS
     points = p_inst + p_gen + p_dist + p_exp;
     return parseFloat(points.toFixed(2));
   },

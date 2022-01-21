@@ -57,7 +57,7 @@ const service = {
       membersDB = {
         usuario,
         username: user.usuario,
-        userImg: user.photoURL,
+        userImg: user.imagenPerfil,
         instrumento: null,
       };
 
@@ -191,7 +191,7 @@ const service = {
         applicationDB = {
           usuario: uid,
           username: user.usuario,
-          userImg: user.photoURL,
+          userImg: user.imagenPerfil,
           instrumento,
         };
 
@@ -234,7 +234,7 @@ const service = {
         membersDB = {
           usuario,
           username: user.usuario,
-          userImg: user.photoURL,
+          userImg: user.imagenPerfil,
           instrumento,
         };
 

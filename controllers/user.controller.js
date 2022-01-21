@@ -63,7 +63,7 @@ const controller = {
             'Unauthorized: el uid es obligatorio para verificar los permisos de administrador',
         });
       }
-      if (req.params.uid !== req.query.uid) {
+      /* if (req.params.uid !== req.query.uid) {
         const isAdmin = await AuthService.checkAdmin(req.query.uid);
         if (!isAdmin) {
           return res.status(403).send({
@@ -71,7 +71,7 @@ const controller = {
               'Forbidden: el usuario actual no tiene permisos de administrador',
           });
         }
-      }
+      } */
 
       let user = await UserService.readUser(req.params.uid);
       if (!user) {

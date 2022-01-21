@@ -170,7 +170,7 @@ const service = {
         events.push({
           id: doc.id,
           username: usuario.usuario,
-          userImg: usuario.photoURL,
+          userImg: usuario.imagenPerfil,
           ...doc.data(),
         });
       });
